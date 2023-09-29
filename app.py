@@ -29,6 +29,7 @@ def lambda_handler(event, context):
   print('ImageName: {0}, Prediction: {1}'.format(key, predicted_class))
 
 def readImageFromBucket(key, bucket_name):
+  print('ImageName: {0}, bucket_name: {1}'.format(key, bucket_name))
   bucket = s3.Bucket(bucket_name)
   object = bucket.Object(key)
   response = object.get()
