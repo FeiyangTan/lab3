@@ -17,6 +17,9 @@ imagenet_labels= np.array(open('model/ImageNetLabels.txt').read().splitlines())
 s3 = boto3.resource('s3')
 
 def lambda_handler(event, context):
+  print("Hello")
+
+def lambda_handler_old(event, context):
   bucket_name = event['Records'][0]['s3']['bucket']['name']
   key = event['Records'][0]['s3']['object']['key']
 
