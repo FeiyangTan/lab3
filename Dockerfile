@@ -45,5 +45,6 @@ COPY handler.py ./
 # # Download ImageNet labels
 # RUN curl https://storage.googleapis.com/download.tensorflow.org/data/ImageNetLabels.txt -o ./model/ImageNetLabels.txt
 
+RUN python3 -m pip install boto3
 # Set the CMD to your handler
 CMD ["handler.lambda_handler"]
