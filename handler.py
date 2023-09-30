@@ -13,5 +13,5 @@
 # 	file.close()
 # 	return data
 
-def face_recognition_handler():	
+def lambda_handler():	
 	print("Hello")

@@ -36,7 +36,7 @@ RUN python3.8 -m pip install -r requirements.txt
 RUN pip uninstall -y pillow && CC="cc -mavx2" pip install -U --force-reinstall pillow-simd
 
 # Copy the earlier created app.py file to the container
-COPY app.py ./
+COPY handler.py ./
 
 # Download ResNet50 and store it in a directory
 RUN mkdir model
@@ -48,4 +48,4 @@ RUN rm -r model/resnet.tar.gz
 RUN curl https://storage.googleapis.com/download.tensorflow.org/data/ImageNetLabels.txt -o ./model/ImageNetLabels.txt
 
 # Set the CMD to your handler
-CMD ["app.lambda_handler"]
+CMD ["handler.lambda_handler"]
