@@ -14,4 +14,4 @@
 # 	return data
 
 def lambda_handler(event, context):	
-	print("Hello2")
+  print("Hello2")
