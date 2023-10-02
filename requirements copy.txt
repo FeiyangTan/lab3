@@ -1,6 +1,4 @@
-boto3
-pandas
-ffmpeg
-pickle
-face_recognition
-os
+
+# List all python libraries for the lambda
+tensorflow==2.4.0
+tensorflow_hub==0.11
