@@ -54,7 +54,7 @@ def lget_item_from_s3(video_name):
     # temp_file.close()
     try:
         # S3下载文件
-        s3.download_file(input_bucket, video_name, temp_file_path)
+        s3.download_file(input_bucket, video_name, "test.mp4")
         print("File downloaded successfully!")
         # S3删除文件
         s3.delete_object(Bucket=input_bucket, Key=video_name)
