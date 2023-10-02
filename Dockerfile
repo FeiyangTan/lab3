@@ -45,13 +45,14 @@ RUN python${RUNTIME_VERSION} -m pip install -r requirements.txt --target ${FUNCT
 COPY entry.sh /
 
 # Copy function code
-COPY handler.py ${FUNCTION_DIR}
+COPY handler1.py ${FUNCTION_DIR}
 RUN chmod 777 /entry.sh
 
+COPY encoding ${FUNCTION_DIR}
 # RUN mkdir ${FUNCTION_DIR}/video
 # RUN mkdir ${FUNCTION_DIR}/videoPicture
 
 # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
 # CMD [ "handler.handler" ]
 ENTRYPOINT [ "/entry.sh" ]
-CMD [ "handler.handler" ]
+CMD [ "handler1.handler" ]
