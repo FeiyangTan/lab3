@@ -2,6 +2,9 @@
 import boto3
 import pandas as pd
 import ffmpeg
+import pickle
+import face_recognition
+import os
 
 input_bucket = "inputbucket77"
 s3_output_bucket = "outputbucket76"
@@ -9,10 +12,19 @@ s3_output_key = "result.csv"
 dynamodb_name = "studentInfor"
 s3 = boto3.client('s3', region_name='us-east-1')
 
-local_file_path = "file.mp4"
-output_frame_path = "frames/frame-%d.jpg"
+local_file_path = "video/"
+output_frame_path = "/frame-%d.jpg"
+
+i = 1
+
+
+
+
+def face_recognition_handler(event, context):
+    print("helloworld")    
 
 def lambda_handler(event, context):
+    print(i)
     bucket_name = event['Records'][0]['s3']['bucket']['name']
     # key就是文件名
     key = event['Records'][0]['s3']['object']['key']
@@ -30,13 +42,14 @@ def lambda_handler(event, context):
     item = get_item_from_dynamodb("floki")
     set_result_to_s3(item)
 
-# 从S3中获取MP4文件
-def lget_item_from_s3(name):
-    # key就是文件名
+# 从S3中下载、删除指定MP4文件，保存在本地
+def lget_item_from_s3(video_name):
     try:
-        print("文件名: "+ name)
-        s3.download_file(input_bucket, name, local_file_path)
+        # S3下载文件
+        s3.download_file(input_bucket, video_name, local_file_path + video_name)
         print("File downloaded successfully!")
+        # S3删除文件
+        s3.delete_object(Bucket=input_bucket, Key=video_name)
     except Exception as e:
         print("Error occurred:", str(e))
 
@@ -70,16 +83,53 @@ def set_result_to_s3(item):
         print("Item not found in DynamoDB!")
         
         
-# Split MP4 file into frames using ffmpeg
-def split_MP4_file():
-    
-    stream = ffmpeg.input('input.mp4')
-    stream = ffmpeg.hflip(stream)
-    stream = ffmpeg.output(stream, 'output.mp4')
-    ffmpeg.run(stream)
-    # ffmpeg.input(local_file_path).output(output_frame_path, format='image2', vframes='100').run()
+# 把MP4文件分解成jpg图片，保存在本地
+def split_MP4_file(video_name):
+    os.mkdir("videoPicture/"+video_name[:-4])
+    ffmpeg.input(local_file_path+video_name).output("videoPicture/"+video_name[:-4]+output_frame_path, format='image2', vframes='100').run()
     print("Frames extracted successfully!")    
+
+# 获取图片集合中第一张出现人物的照片，返回人物名称
+def open_encoding(video_name):
+    file = open("encoding", "rb")
+    data = pickle.load(file)
+    file.close()
+    # print("Data type:", type(data))
+    # fileName = "frame-%d.jpg"
+    i = 1
+    while True:
+        unknown_image = face_recognition.load_image_file("videoPicture/"+video_name[:-4]+"/frame-"+str(i)+".jpg")
+        i += 1
+        unknown_encoding = face_recognition.face_encodings(unknown_image)[0]
+        # print(unknown_encoding)
+        # print(data['encoding'][0])
+        results = face_recognition.compare_faces(data['encoding'], unknown_encoding)
+        print(type(results))
+        if any(results):
+            first_true_index = next((i for i, x in enumerate(results) if x), None)
+            print(first_true_index)
+            return data["name"][first_true_index]
+        # print(results)
     
-      
-# lget_item_from_s3("test_0.mp4")
-split_MP4_file()
+def handler():
+    video_name = "test_8.mp4"
+    # 1.从S3中下载、删除指定MP4文件，保存在本地
+    lget_item_from_s3(video_name)
+    print("~~1")
+    # 2.把MP4文件分解成jpg图片，保存在本地
+    # os.mkdir("videoPicture")
+    split_MP4_file(video_name)
+    print("~~2")
+    # 3.获取图片集合中第一张出现人物的照片，返回人物名称
+    person_name = open_encoding(video_name)
+    print("~~3: "+ person_name)
+    # 4.从dynamodb中获取人物信息
+    person_infor = get_item_from_dynamodb(person_name)
+    print("~~4")
+    print(person_infor)
+    # 5.上传人物信息到S3
+    set_result_to_s3(person_infor)
+    print("~~5")
+    
+# handler() 
+    
