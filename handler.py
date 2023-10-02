@@ -111,7 +111,7 @@ def open_encoding(video_name):
             return data["name"][first_true_index]
         # print(results)
     
-def handler():
+def handler(event, context):
     video_name = "test_8.mp4"
     # 1.从S3中下载、删除指定MP4文件，保存在本地
     lget_item_from_s3(video_name)
