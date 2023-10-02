@@ -68,7 +68,7 @@ def lget_item_from_s3(video_name):
     output_file_pattern = os.path.join(temp_folder_path, 'image_%04d.jpg')
     # os.mkdir("videoPicture/"+video_name[:-4])
     
-    ffmpeg.input(temp_file_path).output(output_file_pattern, format='image2', vframes='100').run()
+    ffmpeg.input("test_0.mp4").output(output_file_pattern, format='image2', vframes='100').run()
     print("Frames extracted successfully!")   
     os.remove(temp_file_path)
     
@@ -200,8 +200,8 @@ def open_encoding(temp_folder_path):
     #         return data["name"][first_true_index]
     #     # print(results)
     
-def handler(event, context):
-# def handler():
+# def handler(event, context):
+def handler():
     video_name = "test_2.mp4"
     # 1.从S3中下载、删除指定MP4文件，保存在本地
     person_name = lget_item_from_s3(video_name)
@@ -217,5 +217,5 @@ def handler(event, context):
     # set_result_to_s3(person_infor)
     # print("~~5")
     
-# handler() 
+handler() 
     
