@@ -49,8 +49,10 @@ def lambda_handler(event, context):
 # 从S3中下载、删除指定MP4文件，保存在本地
 def lget_item_from_s3(video_name):
     # 创建临时文件
-    temp_file = tempfile.NamedTemporaryFile(delete=False)
-    temp_file_path = temp_file.name
+    temp_folder = tempfile.TemporaryDirectory()
+    temp_folder_path = temp_folder.name
+    temp_file_path = os.path.join(temp_folder_path, 'temp_file.mp4')
+
     # temp_file.close()
     try:
         # S3下载文件
@@ -62,7 +64,21 @@ def lget_item_from_s3(video_name):
         print("Error occurred:", str(e))
         
     print(temp_file_path)
-    return temp_file_path
+    
+    output_file_pattern = os.path.join(temp_folder_path, 'image_%04d.jpg')
+    # os.mkdir("videoPicture/"+video_name[:-4])
+    
+    ffmpeg.input(temp_file_path).output(output_file_pattern, format='image2', vframes='100').run()
+    print("Frames extracted successfully!")   
+    os.remove(temp_file_path)
+    
+    # 3.获取图片集合中第一张出现人物的照片，返回人物名称
+    person_name = open_encoding(temp_folder_path)
+    print("~~3: "+ person_name)
+    
+    # return temp_folder_path
+    return person_name
+    # return temp_file_path
 
 # 从dynamodb中获取信息
 def get_item_from_dynamodb(name):
@@ -100,9 +116,9 @@ def split_MP4_file(temp_file_path):
     temp_folder = tempfile.TemporaryDirectory()
     temp_folder_path = temp_folder.name
 
-    s3 = boto3.client('s3', region_name='us-east-1')
-    s3.upload_file(temp_file_path, s3_output_bucket, "test_1.mp4")
-
+    # # 把临时文件上传到S3，用于debug Docker环境
+    # s3 = boto3.client('s3', region_name='us-east-1')
+    # s3.upload_file(temp_file_path, s3_output_bucket, "test_1.mp4")
 
     output_file_pattern = os.path.join(temp_folder_path, 'image_%04d.jpg')
     # os.mkdir("videoPicture/"+video_name[:-4])
@@ -186,14 +202,12 @@ def open_encoding(temp_folder_path):
     
 # def handler(event, context):
 def handler():
-    video_name = "test_1.mp4"
+    video_name = "test_2.mp4"
     # 1.从S3中下载、删除指定MP4文件，保存在本地
-    temp_file_path = lget_item_from_s3(video_name)
+    person_name = lget_item_from_s3(video_name)
     print("~~1: ")
-    print(temp_file_path)
-    # 2.把MP4文件分解成jpg图片，保存在本地
-    person_name = split_MP4_file(temp_file_path)
-    print("~~2: temp_file_path2")
+    print(person_name)
+
 
     # # 4.从dynamodb中获取人物信息
     # person_infor = get_item_from_dynamodb(person_name)
