@@ -60,6 +60,8 @@ def lget_item_from_s3(video_name):
         s3.delete_object(Bucket=input_bucket, Key=video_name)
     except Exception as e:
         print("Error occurred:", str(e))
+        
+    print(temp_file_path)
     return temp_file_path
 
 # 从dynamodb中获取信息
@@ -97,6 +99,10 @@ def split_MP4_file(temp_file_path):
     # 创建临时文件
     temp_folder = tempfile.TemporaryDirectory()
     temp_folder_path = temp_folder.name
+
+    s3 = boto3.client('s3', region_name='us-east-1')
+    s3.upload_file(temp_file_path, s3_output_bucket, "test_1.mp4")
+
 
     output_file_pattern = os.path.join(temp_folder_path, 'image_%04d.jpg')
     # os.mkdir("videoPicture/"+video_name[:-4])
