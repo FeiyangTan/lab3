@@ -2,4 +2,3 @@ boto3
 pandas
 ffmpeg
 face_recognition
-os
