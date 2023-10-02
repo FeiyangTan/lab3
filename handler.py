@@ -1,7 +1,6 @@
-# from boto3 import client as boto3_client
 import boto3
 import pandas as pd
-import ffmpeg
+import subprocess
 import pickle
 import face_recognition
 import os
@@ -9,7 +8,7 @@ import tempfile
 import shutil
 
 input_bucket = "inputbucket77"
-s3_output_bucket = "outputbucket76"
+output_bucket = "outputbucket76"
 s3_output_key = "result.csv"
 dynamodb_name = "studentInfor"
 s3 = boto3.client('s3', region_name='us-east-1')
@@ -65,20 +64,10 @@ def lget_item_from_s3(video_name):
         
     print(temp_file_path)
     
-    output_file_pattern = os.path.join(temp_folder_path, 'image_%04d.jpg')
-    # os.mkdir("videoPicture/"+video_name[:-4])
+    # 2.把MP4文件分解成jpg图片，保存在本地
+    person_name = split_MP4_file(temp_file_path)
     
-    ffmpeg.input("test_0.mp4").output(output_file_pattern, format='image2', vframes='100').run()
-    print("Frames extracted successfully!")   
-    os.remove(temp_file_path)
-    
-    # 3.获取图片集合中第一张出现人物的照片，返回人物名称
-    person_name = open_encoding(temp_folder_path)
-    print("~~3: "+ person_name)
-    
-    # return temp_folder_path
     return person_name
-    # return temp_file_path
 
 # 从dynamodb中获取信息
 def get_item_from_dynamodb(name):
@@ -93,7 +82,7 @@ def get_item_from_dynamodb(name):
     return item
 
 # 上传结果到S3
-def set_result_to_s3(item):
+def set_result_to_s3(item, video_name):
     if item:
         df = pd.DataFrame.from_dict([item])
         csv_data = df.to_csv(index=False)
@@ -102,10 +91,12 @@ def set_result_to_s3(item):
         s3 = boto3.client('s3', region_name='us-east-1')
         s3.put_object(
             Body=csv_data,
-            Bucket=s3_output_bucket,
-            Key=s3_output_key
+            Bucket=output_bucket,
+            Key=video_name[:-4]+".csv"
         )
         print("Data uploaded successfully as CSV to S3 bucket!")
+        print("~~~~~~")
+        print(item["name"])
     else:
         print("Item not found in DynamoDB!")
         
@@ -116,14 +107,18 @@ def split_MP4_file(temp_file_path):
     temp_folder = tempfile.TemporaryDirectory()
     temp_folder_path = temp_folder.name
 
-    # # 把临时文件上传到S3，用于debug Docker环境
-    # s3 = boto3.client('s3', region_name='us-east-1')
-    # s3.upload_file(temp_file_path, s3_output_bucket, "test_1.mp4")
-
     output_file_pattern = os.path.join(temp_folder_path, 'image_%04d.jpg')
     # os.mkdir("videoPicture/"+video_name[:-4])
     
-    ffmpeg.input(temp_file_path).output(output_file_pattern, format='image2', vframes='100').run()
+    command = [
+        "ffmpeg",
+        "-i", temp_file_path,
+        "-vf", "fps=1",
+        "-qscale:v", "2",
+        f"{temp_folder_path}/frame-%d.jpg"
+    ]
+    subprocess.run(command)
+    # ffmpeg.input(temp_file_path).output(output_file_pattern, format='image2', vframes='100').run()
     print("Frames extracted successfully!")   
     os.remove(temp_file_path)
     
@@ -202,20 +197,21 @@ def open_encoding(temp_folder_path):
     
 # def handler(event, context):
 def handler():
-    video_name = "test_2.mp4"
+    video_name = "test_5.mp4"
     # 1.从S3中下载、删除指定MP4文件，保存在本地
     person_name = lget_item_from_s3(video_name)
     print("~~1: ")
     print(person_name)
+    
 
 
-    # # 4.从dynamodb中获取人物信息
-    # person_infor = get_item_from_dynamodb(person_name)
-    # print("~~4")
-    # print(person_infor)
-    # # 5.上传人物信息到S3
-    # set_result_to_s3(person_infor)
-    # print("~~5")
+    # 4.从dynamodb中获取人物信息
+    person_infor = get_item_from_dynamodb(person_name)
+    print("~~4")
+    print(person_infor)
+    # 5.上传人物信息到S3
+    set_result_to_s3(person_infor, video_name)
+    print("~~5")
     
 handler() 
     
