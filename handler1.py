@@ -180,7 +180,7 @@ def open_encoding(temp_folder_path):
     
 # def handler(event, context):
 def handler():
-    video_name = "test_2.mp4"
+    video_name = "test_1.mp4"
     # 1.从S3中下载、删除指定MP4文件，保存在本地
     temp_file_path = lget_item_from_s3(video_name)
     print("~~1: ")
