@@ -54,7 +54,7 @@ def lget_item_from_s3(video_name):
     # temp_file.close()
     try:
         # S3下载文件
-        s3.download_file(input_bucket, video_name, "test.mp4")
+        s3.download_file(input_bucket, video_name, temp_file_path)
         print("File downloaded successfully!")
         # S3删除文件
         s3.delete_object(Bucket=input_bucket, Key=video_name)
@@ -180,14 +180,14 @@ def open_encoding(temp_folder_path):
     
 # def handler(event, context):
 def handler():
-    video_name = "test_1.mp4"
+    video_name = "test_2.mp4"
     # 1.从S3中下载、删除指定MP4文件，保存在本地
     temp_file_path = lget_item_from_s3(video_name)
     print("~~1: ")
     print(temp_file_path)
-    # # 2.把MP4文件分解成jpg图片，保存在本地
-    # person_name = split_MP4_file(temp_file_path)
-    # print("~~2: temp_file_path2")
+    # 2.把MP4文件分解成jpg图片，保存在本地
+    person_name = split_MP4_file(temp_file_path)
+    print("~~2: temp_file_path2")
 
     # # 4.从dynamodb中获取人物信息
     # person_infor = get_item_from_dynamodb(person_name)
