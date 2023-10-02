@@ -112,24 +112,26 @@ def open_encoding(video_name):
         # print(results)
     
 def handler(event, context):
-    video_name = "test_8.mp4"
+# def handler():
+    video_name = "test_0.mp4"
     # 1.从S3中下载、删除指定MP4文件，保存在本地
+    os.mkdir("video")
     lget_item_from_s3(video_name)
     print("~~1")
-    # 2.把MP4文件分解成jpg图片，保存在本地
+    # # 2.把MP4文件分解成jpg图片，保存在本地
     # os.mkdir("videoPicture")
-    split_MP4_file(video_name)
-    print("~~2")
-    # 3.获取图片集合中第一张出现人物的照片，返回人物名称
-    person_name = open_encoding(video_name)
-    print("~~3: "+ person_name)
-    # 4.从dynamodb中获取人物信息
-    person_infor = get_item_from_dynamodb(person_name)
-    print("~~4")
-    print(person_infor)
-    # 5.上传人物信息到S3
-    set_result_to_s3(person_infor)
-    print("~~5")
+    # split_MP4_file(video_name)
+    # print("~~2")
+    # # 3.获取图片集合中第一张出现人物的照片，返回人物名称
+    # person_name = open_encoding(video_name)
+    # print("~~3: "+ person_name)
+    # # 4.从dynamodb中获取人物信息
+    # person_infor = get_item_from_dynamodb(person_name)
+    # print("~~4")
+    # print(person_infor)
+    # # 5.上传人物信息到S3
+    # set_result_to_s3(person_infor)
+    # print("~~5")
     
 # handler() 
     
